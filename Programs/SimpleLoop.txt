@@ -1,0 +1,8 @@
+;sample program - simple loop
+Start:	ADD	#5, Temp	;dummy instruction inside loop
+	ADD	#-1,Counter	;decement loop counter
+	JUMPZ	NewLocation, Counter ;when counter = 0, done
+	JUMP 	Start	;otherwise repeat loop
+Counter:	DATA	10	;loop counter
+Temp:	DATA	0
+NewLocation:	COPY 0,1		;dummy instruction after loop

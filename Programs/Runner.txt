@@ -1,0 +1,2 @@
+;simple progam that moves through memory
+copy 0,1

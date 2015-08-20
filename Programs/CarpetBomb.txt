@@ -1,0 +1,5 @@
+;carpet bombing - put 1's through memory
+Loop:	COPY	#1,@MemPtr	;put a 1 at location pointed to by MemPtr
+	ADD	#1,MemPtr	;increment the pointer
+	JUMP	Loop	;and do it again
+MemPtr:	DATA	1

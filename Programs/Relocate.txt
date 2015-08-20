@@ -1,0 +1,14 @@
+; simple relocate program
+	COPY	#-9,Loc	;offset from Loc to start of relocate program
+	COPY	#50,NewLoc	;offset from NewLoc to relocate program to
+Loop:	COPY	@Loc,@NewLoc ; move an instruction
+	ADD	#1,Loc	;increment ptr to next instruction
+	ADD	#1,NewLoc	;increment ptr to next location to move it to
+	JUMPZ	Done,Loc	;if Loc is 0 we are done
+	JUMP 	Loop	;otherwise move next
+Done:	COPY	#50,NewLoc	;reset beginning of relocated program
+	JUMP	@NewLoc	;and jump to it
+Loc:	DATA	0	;ptr to progam to move
+NewLoc:	DATA	0	;ptr to location to move to
+
+

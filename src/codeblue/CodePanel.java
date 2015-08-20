@@ -1,8 +1,6 @@
 package codeblue;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JPanel;
 /*
  * CodePanel.java
  *

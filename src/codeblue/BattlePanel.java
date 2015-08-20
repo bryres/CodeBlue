@@ -1,10 +1,9 @@
 package codeblue;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Graphics;
+
+import javax.swing.JPanel;
 /*
  * BattlePanel.java
  *
@@ -42,8 +41,8 @@ public class BattlePanel extends JPanel{
     public void loadInstructions(int PgmNum,int start){
         if(PgmNum ==1) PC1 = start;
         else PC2 = start;
-         for(int i=0;i<CodeBlue.BinfoPane.instructions.size();i++){
-             memory[start].copyInst(CodeBlue.BinfoPane.instructions.elementAt(i));
+         for(int i=0;i<BattleInfo.instructions.size();i++){
+             memory[start].copyInst(BattleInfo.instructions.elementAt(i));
              Owner[start] = PgmNum;
              start++;
          }

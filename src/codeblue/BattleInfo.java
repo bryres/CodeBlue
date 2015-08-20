@@ -1,19 +1,30 @@
 package codeblue;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import java.util.*;
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 /*
  * BattleInfo.java
  *
  * Created on August 22, 2007, 8:17 AM
+ * Original Author: Dennis.Schweitzer
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Random;
+import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
 
 /**
  *
@@ -25,7 +36,7 @@ public class BattleInfo extends JPanel implements ActionListener{
          PC1lbl,PC2lbl,NumIters,Winner;
  public static JTextField MaxIters;
  public static int memStart1 = 0,memStart2 = 0;
- public static JComboBox Order;
+ public static JComboBox<String> order;
  javax.swing.Timer timer;
  public static Vector<CodeBlueInstruction> instructions = new Vector<CodeBlueInstruction>();
  public static Vector<CodeBlueInstruction> instructions1 = new Vector<CodeBlueInstruction>();
@@ -70,11 +81,11 @@ public class BattleInfo extends JPanel implements ActionListener{
         JLabel ExOrder = new JLabel("Execution Order:");
         add(ExOrder);
         String[] orderStr = {"1 then 2","2 then 1"};
-        Order = new JComboBox(orderStr);
-        Order.setMaximumSize(new Dimension(50,20));
-        Order.setSelectedIndex(0);
-        Order.addActionListener(this);
-        add(Order);
+        order = new JComboBox<String>(orderStr);
+        order.setMaximumSize(new Dimension(50,20));
+        order.setSelectedIndex(0);
+        order.addActionListener(this);
+        add(order);
         JButton Run = new JButton("Run Single Battle");
         Run.addActionListener(this);
         add(Run);
@@ -120,14 +131,14 @@ public void actionPerformed(ActionEvent e){
                 else { if(whoFirst==1) turn = 2; else turn = 1;}
                 do{
                   CodeBlue.BattlePane.ExecuteInstruction(turn);
-                  if(CodeBlue.BattlePane.legalInstruction){
+                  if(BattlePanel.legalInstruction){
                     numsteps++;
                     if(turn==1) turn = 2; else turn = 1;
                   }
                 }
-                while(CodeBlue.BattlePane.legalInstruction && 
+                while(BattlePanel.legalInstruction && 
                         (numsteps <= maxIterations));
-                if(CodeBlue.BattlePane.legalInstruction) ties++;
+                if(BattlePanel.legalInstruction) ties++;
                 else {if(turn==1) wins2++; else wins1++;}
             }
            Winner.setText("Wins: 1-"+wins1+" 2-"+wins2+ " Ties: "+ties);
@@ -183,12 +194,12 @@ public void reloadBM(int PgmNum){
 }
     public void Step(){
         CodeBlue.BattlePane.ExecuteInstruction(turn);
-        if(CodeBlue.BattlePane.legalInstruction){
+        if(BattlePanel.legalInstruction){
            numSteps++;
            NumIters.setText(""+numSteps/2);
            if(turn==1)
-               PC1lbl.setText(""+CodeBlue.BattlePane.PC1);
-           else  PC2lbl.setText(""+CodeBlue.BattlePane.PC2);
+               PC1lbl.setText(""+BattlePanel.PC1);
+           else  PC2lbl.setText(""+BattlePanel.PC2);
            if(turn==1) turn = 2; else turn = 1;
            repaint();
         }
@@ -206,13 +217,12 @@ public void reloadBM(int PgmNum){
         
     }
     public void loadFile(int PgmNum){
-        String fname, InText = "";
+        String fname;
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File("."));
         int r = chooser.showOpenDialog(CodeBlue.frame);
         if (r == JFileChooser.APPROVE_OPTION) {
            fname = chooser.getSelectedFile().getPath();
-        int CodePos = 0;
         instructions.removeAllElements();
        try {
             BufferedReader inputStream = new BufferedReader(new FileReader(fname));

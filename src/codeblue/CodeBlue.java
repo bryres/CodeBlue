@@ -1,13 +1,36 @@
 package codeblue;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.ImageIcon;
-import java.util.*;
-import java.io.*;
-import javax.swing.filechooser.FileFilter;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Vector;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.OverlayLayout;
 /*
  * CodeBlue.java
  *
@@ -23,34 +46,32 @@ import javax.swing.filechooser.FileFilter;
  */
 public class CodeBlue implements ActionListener{
 
-    public static JTextArea CodePane;
-    MemoryPanel MemoryPane;
-    public static BattlePanel BattlePane;
-    public static BattleInfo BinfoPane;
+    public static JTextArea codePane;
+    MemoryPanel memoryPane;
+    public static BattlePanel battlePane;
+    public static BattleInfo battleInfoPane;
     public static Vector<CodeBlueInstruction> instructions = new Vector<CodeBlueInstruction>();
-    public static int CurrCmdPos = -1;
+    public static int currCmdPos = -1;
     public static FontMetrics fm; 
     public static int currX, currY;
     public static JFrame frame;
-    public static JPanel GraphPanel;
-    public static JPanel InfoPane;
-    public static boolean ExecutionMode = false;
-    public JButton StepBtn,BackBtn,ResetBtn,QuitBtn,UpBtn,DownBtn;
+    public static JPanel graphPanel;
+    public static JPanel infoPane;
+    public static boolean executionMode = false;
+    public JButton stepBtn,backBtn,resetBtn,quitBtn,upBtn,downBtn;
     JDialog tmp;
     JTextArea output;
     JSplitPane splitPane;
     JScrollPane scrollPane;
     public static String newline = System.getProperty("line.separator");
     public static JLabel msgLabel;
-    private int CodePos = 0;
-    public JMenuItem LMitem, Exitem;
+    private int codePos = 0;
+    public JMenuItem lMitem, exitem;
 
     public JMenuBar createMenuBar() {
         JMenuBar menuBar;
-        JMenu menu, submenu;
+        JMenu menu;
         JMenuItem menuItem;
-        JRadioButtonMenuItem rbMenuItem;
-        JCheckBoxMenuItem cbMenuItem;
 
         //Create the menu bar.
         menuBar = new JMenuBar();
@@ -77,12 +98,12 @@ public class CodeBlue implements ActionListener{
         menuItem = new JMenuItem("Edit/Test Code");
         menuItem.addActionListener(this);
         menu.add(menuItem);
-        LMitem = new JMenuItem("Load Memory");
-        LMitem.addActionListener(this);
-        menu.add(LMitem);
-        Exitem = new JMenuItem("Execute");
-        Exitem.addActionListener(this);
-        menu.add(Exitem);
+        lMitem = new JMenuItem("Load Memory");
+        lMitem.addActionListener(this);
+        menu.add(lMitem);
+        exitem = new JMenuItem("Execute");
+        exitem.addActionListener(this);
+        menu.add(exitem);
         menuItem = new JMenuItem("Run Battle");
         menuItem.addActionListener(this);
         menu.add(menuItem);
@@ -101,61 +122,61 @@ public class CodeBlue implements ActionListener{
         ExecuteBtns.setLayout(new BoxLayout(ExecuteBtns,BoxLayout.LINE_AXIS));
         JLabel blank = new JLabel("                                                 ");
         ExecuteBtns.add(blank);
-        StepBtn = new JButton("Step");
-        StepBtn.addActionListener(new ActionListener() {
+        stepBtn = new JButton("Step");
+        stepBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae){ stepFunc();}
         });
-        StepBtn.setEnabled(false);
-        ExecuteBtns.add(StepBtn);
-        BackBtn = new JButton("Back");
-        BackBtn.addActionListener(new ActionListener() {
+        stepBtn.setEnabled(false);
+        ExecuteBtns.add(stepBtn);
+        backBtn = new JButton("Back");
+        backBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae){ backFunc();}
         });
-        BackBtn.setEnabled(false);
-        ExecuteBtns.add(BackBtn);
-        ResetBtn = new JButton("Reset");
-        ResetBtn.addActionListener(new ActionListener() {
+        backBtn.setEnabled(false);
+        ExecuteBtns.add(backBtn);
+        resetBtn = new JButton("Reset");
+        resetBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae){ resetFunc();}
         });
-        ResetBtn.setEnabled(false);
-        ExecuteBtns.add(ResetBtn);
-        QuitBtn = new JButton("Quit");
-        QuitBtn.addActionListener(new ActionListener() {
+        resetBtn.setEnabled(false);
+        ExecuteBtns.add(resetBtn);
+        quitBtn = new JButton("Quit");
+        quitBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae){ quitFunc();}
         });
-        QuitBtn.setEnabled(false);
-        ExecuteBtns.add(QuitBtn);
+        quitBtn.setEnabled(false);
+        ExecuteBtns.add(quitBtn);
         menuBar.add(ExecuteBtns);
         return menuBar;
     }
 
     public Container createContentPane() {
         //Create the  panes
-        InfoPane = new JPanel();
-        InfoPane.setMinimumSize(new Dimension(300,500) );
-        LayoutManager overlay1 = new OverlayLayout(InfoPane);
-        InfoPane.setLayout(overlay1);
-        CodePane = new JTextArea();
-        CodePane.setMinimumSize(new Dimension(300,500) );
-        InfoPane.add(CodePane);
-        BinfoPane = new BattleInfo();
-        BinfoPane.setMinimumSize(new Dimension(300,500));
-        InfoPane.add(BinfoPane);
-        BinfoPane.setVisible(false);
-        MemoryPane = new MemoryPanel();
-        BattlePane = new BattlePanel();
-        BattlePane.setMinimumSize(new Dimension(250,500));
+        infoPane = new JPanel();
+        infoPane.setMinimumSize(new Dimension(300,500) );
+        LayoutManager overlay1 = new OverlayLayout(infoPane);
+        infoPane.setLayout(overlay1);
+        codePane = new JTextArea();
+        codePane.setMinimumSize(new Dimension(300,500) );
+        infoPane.add(codePane);
+        battleInfoPane = new BattleInfo();
+        battleInfoPane.setMinimumSize(new Dimension(300,500));
+        infoPane.add(battleInfoPane);
+        battleInfoPane.setVisible(false);
+        memoryPane = new MemoryPanel();
+        battlePane = new BattlePanel();
+        battlePane.setMinimumSize(new Dimension(250,500));
 
-        GraphPanel = new JPanel();
-        LayoutManager overlay = new OverlayLayout(GraphPanel);
-        GraphPanel.setLayout(overlay);
-        GraphPanel.add(MemoryPane);
-        GraphPanel.add(BattlePane);
-        BattlePane.setVisible(false);
+        graphPanel = new JPanel();
+        LayoutManager overlay = new OverlayLayout(graphPanel);
+        graphPanel.setLayout(overlay);
+        graphPanel.add(memoryPane);
+        graphPanel.add(battlePane);
+        battlePane.setVisible(false);
         //Create a scrolled text area.
-        scrollPane = new JScrollPane(InfoPane);
+        scrollPane = new JScrollPane(infoPane);
         //Add the text and graph area to the content pane.
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPane,GraphPanel);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPane,graphPanel);
         splitPane.setPreferredSize(new Dimension(1000,500));
         splitPane.setDividerLocation(300);
         return splitPane;
@@ -166,41 +187,41 @@ public class CodeBlue implements ActionListener{
       
       
     public void stepFunc(){
-        MemoryPane.ExecuteInstruction();
+        memoryPane.ExecuteInstruction();
     }
 
     public void backFunc(){
-      MemoryPane.unExecuteInstruction();
+      memoryPane.unExecuteInstruction();
   }
     public void resetFunc(){
-        MemoryPane.reset();
-        MemoryPane.loadInstructions();
-        MemoryPane.setPC(0);
-        MemoryPane.repaint();
+        memoryPane.reset();
+        memoryPane.loadInstructions();
+        memoryPane.setPC(0);
+        memoryPane.repaint();
     }
  
     public void quitFunc(){
-       MemoryPane.setPC(-1);
-       StepBtn.setEnabled(false); 
-       BackBtn.setEnabled(false); 
-       ResetBtn.setEnabled(false); 
-       QuitBtn.setEnabled(false); 
-       ExecutionMode = false;
+       memoryPane.setPC(-1);
+       stepBtn.setEnabled(false); 
+       backBtn.setEnabled(false); 
+       resetBtn.setEnabled(false); 
+       quitBtn.setEnabled(false); 
+       executionMode = false;
     }
     
     public void actionPerformed(ActionEvent e) {
-        String tmpLabel,fname;
+        String fname;
         JMenuItem source = (JMenuItem)(e.getSource());
         String s = source.getText();
-        int tmpN, tmpA, reply,n;
+        int n;
        if(s=="Execute"){
-                ExecutionMode = true;
-                StepBtn.setEnabled(true);
-                BackBtn.setEnabled(true);
-                ResetBtn.setEnabled(true);
-                QuitBtn.setEnabled(true);
-                CurrCmdPos = 0;
-                MemoryPane.setPC(0);
+                executionMode = true;
+                stepBtn.setEnabled(true);
+                backBtn.setEnabled(true);
+                resetBtn.setEnabled(true);
+                quitBtn.setEnabled(true);
+                currCmdPos = 0;
+                memoryPane.setPC(0);
         }
         if(s=="Load"){
             n = 0;
@@ -233,17 +254,17 @@ public class CodeBlue implements ActionListener{
                     JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
             if(n == 0){
                 instructions.removeAllElements();
-                MemoryPane.reset();
-                CodePane.setText("");
+                memoryPane.reset();
+                codePane.setText("");
             }
         }
         if(s=="Load Memory"){
             quitFunc(); //in case execution was in operation
-            CodePos = 0;
+            codePos = 0;
             instructions.removeAllElements();
-            MemoryPane.reset();
+            memoryPane.reset();
             do {
-                String line = getLine(CodePane.getText());
+                String line = getLine(codePane.getText());
                 if(line.length()>0){
                     CodeBlueInstruction Inst = new CodeBlueInstruction();
                     Inst.ParseLine(line);
@@ -251,43 +272,43 @@ public class CodeBlue implements ActionListener{
                         instructions.add(Inst);
                     }
                 }
-            } while(CodePos < CodePane.getText().length());
-          MemoryPane.resolveLabels();
-          MemoryPane.loadInstructions();  
-          MemoryPane.repaint();
+            } while(codePos < codePane.getText().length());
+          memoryPane.resolveLabels();
+          memoryPane.loadInstructions();  
+          memoryPane.repaint();
         }        
         if(s=="Edit/Test Code"){
-            BattlePane.setVisible(false);
-            MemoryPane.setVisible(true);
-            BinfoPane.setVisible(false);
-            CodePane.setVisible(true);
-            LMitem.setEnabled(true);
-            Exitem.setEnabled(true);
+            battlePane.setVisible(false);
+            memoryPane.setVisible(true);
+            battleInfoPane.setVisible(false);
+            codePane.setVisible(true);
+            lMitem.setEnabled(true);
+            exitem.setEnabled(true);
         }
         if(s=="Run Battle"){
             quitFunc(); // in case in execution mode
-            BattlePane.setVisible(true);
-            BinfoPane.setVisible(true);
-            CodePane.setVisible(false);
-            MemoryPane.setVisible(false);
-            LMitem.setEnabled(false);
-            Exitem.setEnabled(false);
+            battlePane.setVisible(true);
+            battleInfoPane.setVisible(true);
+            codePane.setVisible(false);
+            memoryPane.setVisible(false);
+            lMitem.setEnabled(false);
+            exitem.setEnabled(false);
         }
         if(s=="Clear Battle Memory"){
-            BattlePane.ClearMemory();
-            BinfoPane.ClearInfo();
+            battlePane.ClearMemory();
+            battleInfoPane.ClearInfo();
         }        
      }
     private String getLine(String s){
         String rtnS = "";
-        int endofline = s.indexOf("\n",CodePos);
+        int endofline = s.indexOf("\n",codePos);
         if (endofline < 0) {
-            rtnS = s.substring(CodePos);
-            CodePos = s.length();
+            rtnS = s.substring(codePos);
+            codePos = s.length();
         }
         else {
-            rtnS = s.substring(CodePos,endofline);
-            CodePos = endofline+1;
+            rtnS = s.substring(codePos,endofline);
+            codePos = endofline+1;
         }
         return rtnS;
     }
@@ -323,6 +344,7 @@ public class CodeBlue implements ActionListener{
             while ((line = inputStream.readLine()) != null){
                 InText = InText + line + newline;
             }
+            inputStream.close();
       }
       catch(FileNotFoundException e) {
           System.out.println("Error opening data file");
@@ -330,14 +352,14 @@ public class CodeBlue implements ActionListener{
       catch(IOException e){
           System.out.println("Error reading data file");
       }
-        CodePane.setText(InText);
+        codePane.setText(InText);
     }    
     
     public void saveData(String fname){
       Writer output = null;
       try {
             output = new BufferedWriter(new FileWriter(fname));
-            output.write(CodePane.getText());
+            output.write(codePane.getText());
             output.close();
       }
       catch(FileNotFoundException e) {
